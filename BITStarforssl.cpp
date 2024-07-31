@@ -23,13 +23,16 @@ Tree::Tree(state *start, state *goal) : start(start), goal(goal), r(4.0) {}
 
 BITStar::BITStar(std::pair<double, double> _start, std::pair<double, double> _goal, double _eta, int _iter_max)
     : eta(_eta), iter_max(_iter_max) {
-    state *temp=new state();
-    temp->pos = vector2f(_start.first, _start.second);
-    temp->parent = nullptr;
-    temp->next = nullptr;
-    start =  temp;
-    temp->pos = vector2f(_goal.first, _goal.second);
-    goal =  temp;
+    state *s_temp=new state();
+    state *g_temp=new state();
+    s_temp->pos = vector2f(_start.first, _start.second);
+    s_temp->parent = nullptr;
+    s_temp->next = nullptr;
+    start =  s_temp;
+    g_temp->pos = vector2f(_goal.first, _goal.second);
+    g_temp->parent = nullptr;
+    g_temp->next = nullptr;
+    goal =  g_temp;
     tree = new Tree(start, goal);
     srand(time(0));
     init_ = false;
@@ -125,6 +128,8 @@ std::tuple<double, double, Eigen::Vector3d, Eigen::Matrix3d> BITStar::init(){
 
     g_T[start] = 0.0;
     g_T[goal] = std::numeric_limits<double>::infinity();//无限大
+    // std::cout << "g_T[start] = " << g_T[start] << std::endl;
+    // std::cout<<start->pos.x<<std::endl;
 
     double cMin = calc_dist(start->pos,goal->pos);;//起始点和终点之间的距离,也是路径规划的最小距离
     double angle = atan2(goal->pos.y-start->pos.y,goal->pos.x-start->pos.x);//起始点和终点之间的角度
@@ -191,8 +196,8 @@ void BITStar::Prune(double cBest) {
     for (auto& v : tree->V){
         if (g_T[v] < std::numeric_limits<double>::infinity()) {
             temp_V.insert(v);
-            std::cout<<66<<std::endl;
         }
+        // std::cout<<g_T[start]<<std::endl;
     }
     tree->V = temp_V;
 }
@@ -530,16 +535,19 @@ vector<state> BITStar::ebit(state *initial, state *_goal, bool drawtreeflag){
                 }else{
                     num_nodes=200;
                 }
+                
                 if(goal->parent!=nullptr){
                     auto [path_x, path_y] = ExtractPath(goal);
                     std::cout<<"plan success"<<std::endl;
                     plt::plot(path_x, path_y, "r-");
                     plt::pause(0.5);
                 }
+                
                 Prune(g_T[goal]);
                 X_sample.merge(Sample(num_nodes, g_T[goal], cMin, xCenter, C));//采样并合并新节点
                 tree->V_old = tree->V;
                 tree->QV = tree->V;
+            
             }
             // plt::clf();
             // for (auto& v : X_sample) {
@@ -561,7 +569,7 @@ vector<state> BITStar::ebit(state *initial, state *_goal, bool drawtreeflag){
             auto [vm, xm] = BestInEdgeQueue();
             tree->QE.erase(std::make_pair(vm, xm));
 
-            // double actual_cost = cost(*vm, *xm);
+            // double actual_cost = cost(vm, xm);
             // g_T[xm] = g_T[vm] /*+ actual_cost*/;
             // tree->E.insert(std::make_pair(vm, xm));
             // xm->parent = vm;
@@ -584,6 +592,9 @@ vector<state> BITStar::ebit(state *initial, state *_goal, bool drawtreeflag){
                         g_T[xm] = g_T[vm] + actual_cost;
                         tree->E.insert(std::make_pair(vm, xm));
                         xm->parent = vm;
+                        // if()
+                        // std::cout<<xm->parent->pos.x<<std::endl;
+                        
 
                         std::set<std::pair<state*, state*>> set_delete;
                         for (auto& [v, x] : tree->QE) {
@@ -595,9 +606,13 @@ vector<state> BITStar::ebit(state *initial, state *_goal, bool drawtreeflag){
                     }
                 }
             } else {
+                // std::cout<<(int)(goal->parent!=nullptr)<<std::endl;
                 std::cout << "null" <<std::endl;
                 tree->QE.clear();
                 tree->QV.clear();
+                // std::cout<<tree->QE.empty()<<std::endl;
+                // std::cout<<tree->QV.empty()<<std::endl;
+                // std::cout<<i<<std::endl;
             }
 
             if (i % 5 == 0) {
@@ -623,9 +638,10 @@ std::pair<std::vector<double>, std::vector<double>> BITStar::ExtractPath(state *
     std::vector<double> path_y = {_node->pos.y};
 
     while (_node->parent) {
-        _node = node->parent;
+        _node = _node->parent;
         path_x.push_back(_node->pos.x);
         path_y.push_back(_node->pos.y);
+        // std::cout<<"extract posx:"<<_node->pos.x<<std::endl;
     }
 
     return {path_x, path_y};
@@ -714,7 +730,7 @@ bool Utils::is_intersect_circle(std::vector<float> o, std::vector<float> d, std:
     float t = ((a[0] - o[0]) * d[0] + (a[1] - o[1]) * d[1]) / d2;
 
     if (0 <= t && t <= 1) {
-        state *shot,*node;
+        state *shot=new state(),*node=new state();
         shot->pos = vector2f(o[0] + t * d[0], o[1] + t * d[1]);
         node->pos = vector2f(a[0], a[1]);
         if (get_dist(shot, node) <= r + delta) {
