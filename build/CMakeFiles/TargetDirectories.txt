@@ -1,3 +1,0 @@
-/home/viper/BITplanner/build/CMakeFiles/main.dir
-/home/viper/BITplanner/build/CMakeFiles/edit_cache.dir
-/home/viper/BITplanner/build/CMakeFiles/rebuild_cache.dir

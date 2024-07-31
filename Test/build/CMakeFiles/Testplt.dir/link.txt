@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/Testplt.dir/Testplt.cpp.o -o Testplt  /usr/lib/x86_64-linux-gnu/libpython3.10.so /usr/lib/x86_64-linux-gnu/libpython3.10.so 

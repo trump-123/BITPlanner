@@ -1,3 +1,0 @@
-/home/viper/BITplanner/Test/build/CMakeFiles/Testplt.dir
-/home/viper/BITplanner/Test/build/CMakeFiles/edit_cache.dir
-/home/viper/BITplanner/Test/build/CMakeFiles/rebuild_cache.dir
